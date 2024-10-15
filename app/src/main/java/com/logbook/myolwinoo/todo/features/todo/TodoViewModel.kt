@@ -2,6 +2,7 @@ package com.logbook.myolwinoo.todo.features.todo
 
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import com.logbook.myolwinoo.todo.data.Todo
@@ -10,9 +11,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import java.util.UUID
 
-class TodoViewModel(
-
-): ViewModel() {
+class TodoViewModel: ViewModel() {
 
     private val _todoList = MutableStateFlow<List<Todo>>(dummyTodoList)
     val todoList: StateFlow<List<Todo>> = _todoList
@@ -86,8 +85,8 @@ class TodoViewModel(
         _todoList.value.find { it.id == id }
             ?.also {
                 editingTodoId = id
-                title.value = TextFieldValue(it.title)
-                description.value = TextFieldValue(it.description)
+                title.value = TextFieldValue(it.title, TextRange(it.title.length))
+                description.value = TextFieldValue(it.description, TextRange(it.description.length))
                 showTodoSheet()
             }
     }
@@ -99,10 +98,16 @@ class TodoViewModel(
     }
 }
 
-val dummyTodoList = List(3) {
+val dummyTodoList = List(6) { i ->
     Todo(
-        id = (System.currentTimeMillis() + it).toString(),
-        title = "Todo $it",
-        description = "This is a dummy todo item created for demonstration and testing purposes. It represents a typical task within a to-do list application."
+        id = (System.currentTimeMillis() + i).toString(),
+        title = "Todo $i",
+        description = "This is a dummy todo item created for demonstration and testing purposes. It represents a typical task within a to-do list application.".let {
+            var result = it
+            repeat(i) {
+                result += result
+            }
+            result
+        }
     )
 }

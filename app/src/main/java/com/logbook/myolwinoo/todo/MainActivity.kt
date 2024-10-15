@@ -9,21 +9,21 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridScope
+import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
+import androidx.compose.foundation.lazy.staggeredgrid.items
+import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -39,16 +39,14 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
@@ -113,7 +111,7 @@ private fun TodoScreen(
     onEdit: (id: String) -> Unit,
     onDelete: (id: String) -> Unit
 ) {
-    val listState = rememberLazyListState()
+    val listState = rememberLazyStaggeredGridState()
     val expandedFab = remember { derivedStateOf { listState.firstVisibleItemIndex == 0 } }
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
 
@@ -125,7 +123,10 @@ private fun TodoScreen(
             CenterAlignedTopAppBar(
                 scrollBehavior = scrollBehavior,
                 title = {
-                    Text("All Todos")
+                    Text("All Tasks")
+                },
+                actions = {
+
                 }
             )
         },
@@ -133,7 +134,7 @@ private fun TodoScreen(
             ExtendedFloatingActionButton(
                 onClick = { onShowSheet() },
                 expanded = expandedFab.value,
-                icon = { Icon(Icons.Filled.Add, "Create Button") },
+                icon = { Icon(painterResource(R.drawable.ic_add_task), "Create Button") },
                 text = { Text(text = "Create") },
             )
         }
@@ -153,15 +154,22 @@ private fun TodoScreen(
             )
         }
 
-        LazyColumn(
-            contentPadding = innerPadding,
-            state = listState
+        LazyVerticalStaggeredGrid(
+            contentPadding = PaddingValues(
+                start = 20.dp,
+                end = 20.dp,
+                top = innerPadding.calculateTopPadding(),
+                bottom = innerPadding.calculateBottomPadding() + 100.dp
+            ),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalItemSpacing = 12.dp,
+            columns = StaggeredGridCells.Fixed(2),
+            state = listState,
         ) {
-            item {
+            item(span = StaggeredGridItemSpan.FullLine) {
                 Text(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp, vertical = 16.dp),
+                        .fillMaxWidth(),
                     text = "Today",
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
@@ -176,7 +184,7 @@ private fun TodoScreen(
     }
 }
 
-private fun LazyListScope.todoList(
+private fun LazyStaggeredGridScope.todoList(
     todos: List<Todo>,
     onEdit: (id: String) -> Unit,
     onDelete: (id: String) -> Unit
@@ -203,7 +211,7 @@ fun ToDoItem(
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 8.dp)
+            .wrapContentSize()
     ) {
         Column(
             modifier = Modifier
@@ -221,7 +229,6 @@ fun ToDoItem(
                 modifier = Modifier
                     .fillMaxWidth(),
                 text = todo.description,
-                maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
                 style = MaterialTheme.typography.bodySmall
             )
@@ -235,9 +242,9 @@ fun ToDoItem(
                     onClick = { onEdit(todo.id) }
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.Edit,
+                        painter = painterResource(R.drawable.ic_edit),
                         contentDescription = "Edit Button",
-                        modifier = Modifier.size(16.dp)
+                        modifier = Modifier.size(16.dp),
                     )
                 }
                 IconButton(
@@ -245,7 +252,7 @@ fun ToDoItem(
                     onClick = { onDelete(todo.id) }
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.Delete,
+                        painter = painterResource(R.drawable.ic_delete),
                         contentDescription = "Delete Button",
                         modifier = Modifier.size(16.dp)
                     )
@@ -270,11 +277,6 @@ fun TodoSheet(
     onDescriptionChange: (TextFieldValue) -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState()
-    val focusRequester = remember { FocusRequester() }
-
-    LaunchedEffect(Unit) {
-        focusRequester.requestFocus()
-    }
 
     ModalBottomSheet(
         modifier = modifier,
@@ -290,7 +292,6 @@ fun TodoSheet(
             Box {
                 BasicTextField(
                     modifier = Modifier
-                        .focusRequester(focusRequester)
                         .fillMaxWidth(),
                     cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
                     value = title,
@@ -303,7 +304,7 @@ fun TodoSheet(
                 )
                 if (title.text.isEmpty()) {
                     Text(
-                        text = "New todo",
+                        text = "New task",
                         style = MaterialTheme.typography.bodyLarge,
                         color = Color.Gray,
                         fontWeight = FontWeight.Bold
