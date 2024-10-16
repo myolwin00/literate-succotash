@@ -6,17 +6,20 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.CreationExtras
 import com.logbook.myolwinoo.todo.data.Todo
+import com.logbook.myolwinoo.todo.data.TodoRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
-import java.util.UUID
+import kotlinx.coroutines.launch
 
-class TodoViewModel: ViewModel() {
-
-    private val _todoList = MutableStateFlow<List<Todo>>(dummyTodoList)
+class TodoViewModel(
+    private val repo: TodoRepository
+): ViewModel() {
 
     val todayTodoList: MutableStateFlow<List<Todo>> = MutableStateFlow(emptyList())
     val upcomingTodoList: MutableStateFlow<List<Todo>> = MutableStateFlow(emptyList())
@@ -40,7 +43,7 @@ class TodoViewModel: ViewModel() {
     }
 
     init {
-        _todoList
+        repo.getAll()
             .onEach {
                 val today = mutableListOf<Todo>()
                 val upcoming = mutableListOf<Todo>()
@@ -92,57 +95,60 @@ class TodoViewModel: ViewModel() {
     }
 
     fun startEdit(id: String) {
-        _todoList.value.find { it.id == id }
-            ?.also {
-                editingTodoId = id
-                title.value = TextFieldValue(it.title, TextRange(it.title.length))
-                description.value = TextFieldValue(it.description, TextRange(it.description.length))
-                showTodoSheet()
-            }
+        viewModelScope.launch {
+            repo.get(id)
+                ?.also {
+                    editingTodoId = id
+                    title.value = TextFieldValue(it.title, TextRange(it.title.length))
+                    description.value = TextFieldValue(it.description, TextRange(it.description.length))
+                    showTodoSheet()
+                }
+        }
     }
 
     fun toggleComplete(id: String) {
-        _todoList.update {
-            it.map {
-                if (it.id == id) {
-                    it.copy(isCompleted = !it.isCompleted)
-                } else it
-            }
+        viewModelScope.launch {
+            repo.toggleComplete(id)
         }
     }
 
     fun delete(id: String) {
-        _todoList.update {
-            it.filterNot { it.id == id }
+        viewModelScope.launch {
+            repo.delete(id)
         }
     }
 
     private fun create() {
-        _todoList.update { value ->
-            val newTodo = Todo(
-                id = UUID.randomUUID().toString(),
+        viewModelScope.launch {
+            repo.create(
                 title = title.value.text,
-                description = description.value.text,
-                timestamp = System.currentTimeMillis(),
-                isCompleted = false
+                description = description.value.text
             )
-            value + listOf(newTodo)
         }
     }
 
     private fun update(id: String) {
-        _todoList.update { value ->
-            value.map {
-                if (it.id == id) {
-                    it.copy(
-                        title = title.value.text,
-                        description = description.value.text,
-                        timestamp = System.currentTimeMillis()
-                    )
-                } else it
-            }
+        viewModelScope.launch {
+            repo.update(
+                id = id,
+                title = title.value.text,
+                description = description.value.text
+            )
         }
-        editingTodoId = null
+    }
+
+    class Factory(
+        private val repo: TodoRepository
+    ):  ViewModelProvider.Factory {
+        @Suppress("UNCHECKED_CAST")
+        override fun <T : ViewModel> create(
+            modelClass: Class<T>,
+            extras: CreationExtras
+        ): T {
+            return TodoViewModel(
+                repo,
+            ) as T
+        }
     }
 }
 
