@@ -1,6 +1,5 @@
 package com.logbook.myolwinoo.todo.features.todo
 
-import android.icu.util.Calendar
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.text.TextRange
@@ -21,8 +20,7 @@ class TodoViewModel(
     private val repo: TodoRepository
 ): ViewModel() {
 
-    val todayTodoList: MutableStateFlow<List<Todo>> = MutableStateFlow(emptyList())
-    val upcomingTodoList: MutableStateFlow<List<Todo>> = MutableStateFlow(emptyList())
+    val todoList: MutableStateFlow<List<Todo>> = MutableStateFlow(emptyList())
     val completedTodoList: MutableStateFlow<List<Todo>> = MutableStateFlow(emptyList())
 
     var title = mutableStateOf(TextFieldValue(""))
@@ -31,7 +29,7 @@ class TodoViewModel(
     var description = mutableStateOf(TextFieldValue(""))
         private set
 
-    var showBottomSheet = mutableStateOf<Boolean>(false)
+    var showBottomSheet = mutableStateOf(false)
         private set
 
     private var editingTodoId: String? = null
@@ -45,18 +43,8 @@ class TodoViewModel(
     init {
         repo.getAll()
             .onEach {
-                val today = mutableListOf<Todo>()
-                val upcoming = mutableListOf<Todo>()
-                val completed = mutableListOf<Todo>()
-                it.forEach {
-                    when {
-                        it.isCompleted -> { completed.add(it) }
-                        isToday(it) && !it.isCompleted -> { today.add(it) }
-                        !isToday(it) && !it.isCompleted -> { upcoming.add(it) }
-                    }
-                }
-                todayTodoList.update { today }
-                upcomingTodoList.update { upcoming }
+                val (completed, todo) = it.partition { todo -> todo.isCompleted }
+                todoList.update { todo }
                 completedTodoList.update { completed }
             }
             .launchIn(viewModelScope)
@@ -160,13 +148,4 @@ val dummyTodoList = List(6) { i ->
         timestamp = System.currentTimeMillis(),
         isCompleted = i % 2 == 0
     )
-}
-
-fun isToday(todo: Todo): Boolean {
-    val calendar = Calendar.getInstance()
-    val today = calendar.get(Calendar.DAY_OF_YEAR)
-    val todoDay = Calendar.getInstance().apply {
-        timeInMillis = todo.timestamp
-    }.get(Calendar.DAY_OF_YEAR)
-    return today == todoDay
 }

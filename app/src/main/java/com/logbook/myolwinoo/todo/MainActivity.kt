@@ -25,17 +25,14 @@ class MainActivity : ComponentActivity() {
             TodoTheme {
                 val viewModel: TodoViewModel = viewModel(factory = TodoViewModel.Factory(repo))
 
-                val todayTodoList = viewModel.todayTodoList.collectAsStateWithLifecycle(emptyList())
-                val upcomingTodoList =
-                    viewModel.upcomingTodoList.collectAsStateWithLifecycle(emptyList())
+                val todoList = viewModel.todoList.collectAsStateWithLifecycle(emptyList())
                 val completedTodoList =
                     viewModel.completedTodoList.collectAsStateWithLifecycle(emptyList())
 
                 val isSaveBtnEnabled = viewModel.isSaveBtnEnabled.collectAsStateWithLifecycle(false)
 
                 TodoScreen(
-                    todayTodoList = todayTodoList.value,
-                    upcomingTodoList = upcomingTodoList.value,
+                    todoList = todoList.value,
                     completedTodoList = completedTodoList.value,
 
                     isSaveBtnEnabled = isSaveBtnEnabled.value,

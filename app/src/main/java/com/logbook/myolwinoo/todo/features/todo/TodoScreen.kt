@@ -19,7 +19,6 @@ import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
 import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
@@ -50,8 +49,7 @@ import com.logbook.myolwinoo.todo.data.Todo
 
 @Composable
 fun TodoScreen(
-    todayTodoList: List<Todo>,
-    upcomingTodoList: List<Todo>,
+    todoList: List<Todo>,
     completedTodoList: List<Todo>,
     title: TextFieldValue,
     onTitleChange: (TextFieldValue) -> Unit,
@@ -143,16 +141,8 @@ fun TodoScreen(
             state = listState,
         ) {
             todoSection(
-                title = "Today",
-                todos = todayTodoList,
-                onEdit = onEdit,
-                onDelete = onDelete,
-                onToggleComplete = onToggleComplete
-            )
-
-            todoSection(
-                title = "Upcoming",
-                todos = upcomingTodoList,
+                title = "Todo",
+                todos = todoList,
                 onEdit = onEdit,
                 onDelete = onDelete,
                 onToggleComplete = onToggleComplete
@@ -328,8 +318,7 @@ private fun TodoItemPreview_Completed() {
 @Composable
 private fun TodoScreenPreview() {
     TodoScreen(
-        todayTodoList = dummyTodoList,
-        upcomingTodoList = dummyTodoList,
+        todoList = dummyTodoList,
         completedTodoList = dummyTodoList,
         title = TextFieldValue(""),
         onTitleChange = {},
