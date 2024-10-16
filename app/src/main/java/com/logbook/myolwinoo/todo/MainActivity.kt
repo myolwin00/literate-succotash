@@ -1,12 +1,9 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
-
 package com.logbook.myolwinoo.todo
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.logbook.myolwinoo.todo.features.todo.TodoScreen
@@ -21,17 +18,14 @@ class MainActivity : ComponentActivity() {
             TodoTheme {
                 val viewModel: TodoViewModel = viewModel()
 
-                val todayTodoList = viewModel.todayTodoList.collectAsStateWithLifecycle(emptyList())
-                val upcomingTodoList =
-                    viewModel.upcomingTodoList.collectAsStateWithLifecycle(emptyList())
+                val todoList = viewModel.todoList.collectAsStateWithLifecycle(emptyList())
                 val completedTodoList =
                     viewModel.completedTodoList.collectAsStateWithLifecycle(emptyList())
 
                 val isSaveBtnEnabled = viewModel.isSaveBtnEnabled.collectAsStateWithLifecycle(false)
 
                 TodoScreen(
-                    todayTodoList = todayTodoList.value,
-                    upcomingTodoList = upcomingTodoList.value,
+                    todoList = todoList.value,
                     completedTodoList = completedTodoList.value,
 
                     isSaveBtnEnabled = isSaveBtnEnabled.value,
