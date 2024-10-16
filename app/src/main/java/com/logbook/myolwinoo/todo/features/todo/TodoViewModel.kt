@@ -122,6 +122,7 @@ class TodoViewModel(
                 title = title.value.text,
                 description = description.value.text
             )
+            editingTodoId = null
         }
     }
 
