@@ -73,6 +73,9 @@ class TodoViewModel(
 
     fun dismissTodoSheet() {
         showBottomSheet.value = false
+        editingTodoId = null
+        title.value = TextFieldValue("")
+        description.value = TextFieldValue("")
     }
 
     fun showConfirmDelete(id: String) {
@@ -133,6 +136,8 @@ class TodoViewModel(
                 description = description.value.text
             )
             editingTodoId = null
+            title.value = TextFieldValue("")
+            description.value = TextFieldValue("")
         }
     }
 
