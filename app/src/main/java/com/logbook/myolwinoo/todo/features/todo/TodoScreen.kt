@@ -18,6 +18,8 @@ import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
 import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -28,6 +30,7 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
@@ -65,6 +68,10 @@ fun TodoScreen(
     showBottomSheet: Boolean,
     onShowSheet: () -> Unit,
     onDismissSheet: () -> Unit,
+
+    showConfirmDeleteId: String?,
+    onShowConfirmDelete: (id: String) -> Unit,
+    onHideConfirmDelete: () -> Unit,
 
     onEdit: (id: String) -> Unit,
     onDelete: (id: String) -> Unit,
@@ -109,6 +116,43 @@ fun TodoScreen(
         }
     ) { innerPadding ->
 
+        showConfirmDeleteId?.let { id ->
+            AlertDialog(
+                icon = {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_delete),
+                        contentDescription = "Delete Icon"
+                    )
+                },
+                title = {
+                    Text(text = "Confirm Delete")
+                },
+                text = {
+                    Text(text = "Are you sure you want to delete this? This action cannot be undone.")
+                },
+                onDismissRequest = {
+                    onHideConfirmDelete()
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            onDelete(id)
+                            onHideConfirmDelete()
+                        }
+                    ) {
+                        Text("Confirm")
+                    }
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = onHideConfirmDelete
+                    ) {
+                        Text("Cancel")
+                    }
+                }
+            )
+        }
+
         if (showBottomSheet) {
             TodoSheet(
                 onDismiss = onDismissSheet,
@@ -144,7 +188,7 @@ fun TodoScreen(
                 title = "Todo",
                 todos = todoList,
                 onEdit = onEdit,
-                onDelete = onDelete,
+                onDelete = onShowConfirmDelete,
                 onToggleComplete = onToggleComplete
             )
 
@@ -152,7 +196,7 @@ fun TodoScreen(
                 title = "Completed",
                 todos = completedTodoList,
                 onEdit = onEdit,
-                onDelete = onDelete,
+                onDelete = onShowConfirmDelete,
                 onToggleComplete = onToggleComplete
             )
         }
@@ -333,6 +377,10 @@ private fun TodoScreenPreview() {
         showBottomSheet = false,
         onShowSheet = {},
         onDismissSheet = {},
+
+        showConfirmDeleteId = null,
+        onShowConfirmDelete = {},
+        onHideConfirmDelete = {},
 
         listMode = ListMode.List,
         onToggleListMode = {},

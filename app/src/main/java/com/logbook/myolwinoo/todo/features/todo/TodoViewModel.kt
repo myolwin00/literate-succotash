@@ -28,6 +28,8 @@ class TodoViewModel : ViewModel() {
 
     var showBottomSheet = mutableStateOf(false)
         private set
+    var confirmDeleteId = mutableStateOf<String?>(null)
+        private set
 
     private var editingTodoId: String? = null
 
@@ -68,6 +70,14 @@ class TodoViewModel : ViewModel() {
 
     fun dismissTodoSheet() {
         showBottomSheet.value = false
+    }
+
+    fun showConfirmDelete(id: String) {
+        confirmDeleteId.value = id
+    }
+
+    fun hideConfirmDelete() {
+        confirmDeleteId.value = null
     }
 
     fun save() {

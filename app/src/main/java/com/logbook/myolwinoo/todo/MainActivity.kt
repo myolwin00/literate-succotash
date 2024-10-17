@@ -46,6 +46,10 @@ class MainActivity : ComponentActivity() {
                     onShowSheet = viewModel::showTodoSheet,
                     onDismissSheet = viewModel::dismissTodoSheet,
 
+                    showConfirmDeleteId = viewModel.confirmDeleteId.value,
+                    onShowConfirmDelete = viewModel::showConfirmDelete,
+                    onHideConfirmDelete = viewModel::hideConfirmDelete,
+
                     listMode = viewModel.listMode.value,
                     onToggleListMode = viewModel::toggleListMode,
                 )
